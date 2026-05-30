@@ -1,44 +1,39 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, { useEffect, useState } from 'react';
+import { ApolloProvider, ApolloClient } from '@apollo/client';
+import { setupApollo } from './src/api/client';
+import { AppNavigator } from './src/navigation/AppNavigator';
+import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { AuthProvider } from './src/hooks/useAuth';
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+const App = () => {
+  const [client, setClient] = useState<ApolloClient<any> | null>(null);
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+  useEffect(() => {
+    setupApollo().then(setClient).catch(console.error);
+  }, []);
 
-  return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
-  );
-}
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
+  if (!client) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
+    <ApolloProvider client={client}>
+      <AuthProvider>
+        <AppNavigator />
+      </AuthProvider>
+    </ApolloProvider>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
+  center: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
